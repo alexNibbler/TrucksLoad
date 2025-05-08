@@ -9,7 +9,7 @@ import logging
 
 from database import get_db
 from models import Truck, Package
-from schema import TruckResponse, TruckCreate, PackageResponse, PackageCreate, AssignRequest
+from schema import TruckResponse, TruckCreate, PackageResponse, PackageCreate, AssignRequest, AssignResponse
 
 app = FastAPI()
 
@@ -83,7 +83,7 @@ def delete_all_packages(db: Session = Depends(get_db)):
     db.commit()
     return {"message": "All packages deleted"}
 
-@app.post("/loading", tags=["Delivery"], status_code=200)
+@app.post("/loading", tags=["Delivery"], response_model=AssignResponse)
 def load_truck(req: AssignRequest, db: Session = Depends(get_db)):
     stmt = select(Package).where(Package.id.in_(req.package_ids))
     packages = db.scalars(stmt).all()
@@ -101,7 +101,7 @@ def load_truck(req: AssignRequest, db: Session = Depends(get_db)):
                 pkg.truck_id = truck.id
             truck.available = False
             db.commit()
-            return {"message": f"Packages assigned to truck {truck.id}"}
+            return AssignResponse(truck_id = truck.id, package_ids = req.package_ids)
 
     raise HTTPException(status_code=400, detail="No suitable truck found")
 

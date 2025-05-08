@@ -35,3 +35,8 @@ class PackageResponse(Base):
 
 class AssignRequest(Base):
     package_ids: List[int]
+
+
+class AssignResponse(Base):
+    package_ids: List[int]
+    truck_id: int
